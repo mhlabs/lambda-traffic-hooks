@@ -1,5 +1,5 @@
 {
-  "name": "lambda-traffic-hooks",
+  "name": "@mhlabs/lambda-traffic-hooks",
   "version": "1.0.0",
   "description": "Simplify http-testing during code deployments.",
   "main": "index.js",
