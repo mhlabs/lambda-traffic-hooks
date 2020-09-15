@@ -1,5 +1,4 @@
 const AWS = require('aws-sdk');
-const logging = require('@mhlabs/structured-logging');
 const httpclient = require('@mhlabs/signed-http-client');
 
 const tests = {};
@@ -7,10 +6,6 @@ const tests = {};
 AWS.config.update({
   region: process.env.AWS_REGION
 });
-
-const logger = new logging.StructuredLogger(
-  process.env.AWS_LAMBDA_FUNCTION_NAME
-);
 
 const toProxyRequest = (path) => {
   if (!process.env.VersionToTest) {
@@ -41,25 +36,32 @@ const execute = async (event, func) => {
     throw Error('no tests registered');
   }
 
-  const results = Object.keys(tests).map(async (path) => {
+  const results = [];
+  const tasks = Object.keys(tests).map(async (path) => {
     const expected = tests[path];
-    const response = func(path);
-    const ok = response.StatusCode === expected;
+    const response = await func(path);
+    const ok = response.StatusCode === expected || response.status === expected;
 
-    logger.info(ok, {
+    console.log(`Success: ${ok}`, {
       path,
       expected,
-      actual: response.StatusCode,
+      actual: response.StatusCode || response.status,
       status: ok
     });
 
-    return ok;
+    results.push(ok);
   });
+
+  await Promise.all(tasks);
 
   const params = {
     deploymentId: deploymentId,
     lifecycleEventHookExecutionId: lifecycleEventHookExecutionId,
-    status: results.filter((x) => !x).length === 0 ? 'Succeeded' : 'Failed'
+    status:
+      results.length > 0 &&
+      results.filter((x) => x === true).length === results.length
+        ? 'Succeeded'
+        : 'Failed'
   };
 
   return await codedeploy
@@ -78,10 +80,7 @@ exports.handlerPreTrafficHook = async (event) => {
 };
 
 exports.handlerPostTrafficHook = async (event) => {
-  const func = async (path) => {
-    return await httpclient.get(path);
-  };
-
+  const func = async (path) => await httpclient.get(path);
   return await execute(event, func);
 };
 

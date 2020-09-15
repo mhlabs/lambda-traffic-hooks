@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "eslint": "eslint"
+    "eslint": "eslint",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -17,8 +18,7 @@
   },
   "homepage": "https://github.com/mhlabs/lambda-traffic-hooks#readme",
   "dependencies": {
-    "@mhlabs/signed-http-client": "^1.1.1",
-    "@mhlabs/structured-logging": "^2.0.2"
+    "@mhlabs/signed-http-client": "^1.1.1"
   },
   "devDependencies": {
     "aws-sdk": "^2.739.0",

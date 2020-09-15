@@ -23,8 +23,8 @@ module.exports = require('./hooks');
 ```
 
 ### Register hooks to function:
-Hooks: https://docs.aws.amazon.com/codedeploy/latest/userguide/reference-appspec-file-structure-hooks.html#reference-appspec-file-structure-hooks-list-lambda
-SAM: https://docs.amazonaws.cn/en_us/codedeploy/latest/userguide/tutorial-lambda-sam-template.html
+- Hooks: https://docs.aws.amazon.com/codedeploy/latest/userguide/reference-appspec-file-structure-hooks.html#reference-appspec-file-structure-hooks-list-lambda
+- SAM: https://docs.amazonaws.cn/en_us/codedeploy/latest/userguide/tutorial-lambda-sam-template.html
 
 ## Reference
 https://aws.amazon.com/blogs/compute/implementing-safe-aws-lambda-deployments-with-aws-codedeploy/
