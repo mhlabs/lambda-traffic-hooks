@@ -117,7 +117,6 @@ describe('Execute failed CodeBuild-hooks', () => {
   });
 
   it("Should return 'Failure' when returned status code from post-hook is not 200", async () => {
-    mockLambda.invoke.mockResolvedValue({ status: 401 });
     await tested.handlerPostTrafficHook(event);
 
     expect(

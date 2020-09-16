@@ -32,41 +32,53 @@ const execute = async (event, func) => {
   const deploymentId = event.DeploymentId;
   const lifecycleEventHookExecutionId = event.LifecycleEventHookExecutionId;
 
-  if (!tests || tests.length === 0) {
-    throw Error('no tests registered');
-  }
+  try {
+    if (!tests || tests.length === 0) {
+      throw Error('no tests registered');
+    }
 
-  const results = [];
-  const tasks = Object.keys(tests).map(async (path) => {
-    const expected = tests[path];
-    const response = await func(path);
-    const ok = response.StatusCode === expected || response.status === expected;
+    const results = [];
+    const tasks = Object.keys(tests).map(async (path) => {
+      const expected = tests[path];
+      const response = await func(path);
+      const ok =
+        response.StatusCode === expected || response.status === expected;
 
-    console.log(`Success: ${ok}`, {
-      path,
-      expected,
-      actual: response.StatusCode || response.status,
-      status: ok
+      console.log(`Success: ${ok}`, {
+        path,
+        expected,
+        actual: response.StatusCode || response.status,
+        status: ok
+      });
+
+      results.push(ok);
     });
 
-    results.push(ok);
-  });
+    await Promise.all(tasks);
 
-  await Promise.all(tasks);
+    const params = {
+      deploymentId: deploymentId,
+      lifecycleEventHookExecutionId: lifecycleEventHookExecutionId,
+      status:
+        results.length > 0 &&
+        results.filter((x) => x === true).length === results.length
+          ? 'Succeeded'
+          : 'Failed'
+    };
 
-  const params = {
-    deploymentId: deploymentId,
-    lifecycleEventHookExecutionId: lifecycleEventHookExecutionId,
-    status:
-      results.length > 0 &&
-      results.filter((x) => x === true).length === results.length
-        ? 'Succeeded'
-        : 'Failed'
-  };
-
-  return await codedeploy
-    .putLifecycleEventHookExecutionStatus(params)
-    .promise();
+    return await codedeploy
+      .putLifecycleEventHookExecutionStatus(params)
+      .promise();
+  } catch (error) {
+    console.error(error);
+    return await codedeploy
+      .putLifecycleEventHookExecutionStatus({
+        deploymentId,
+        lifecycleEventHookExecutionId,
+        status: 'Failed'
+      })
+      .promise();
+  }
 };
 
 exports.handlerPreTrafficHook = async (event) => {
